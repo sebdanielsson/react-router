@@ -1,5 +1,14 @@
 # `@react-router/architect`
 
+## v8.5.3
+
+### Patch Changes
+
+- Fix `sendReactRouterResponse` corrupting binary response bodies whose content type is not in `binaryTypes` and dropping a leading byte order mark from text bodies ([#15814](https://github.com/remix-run/react-router/pull/15814))
+- Updated dependencies:
+  - [`react-router@8.5.3`](https://github.com/remix-run/react-router/releases/tag/react-router@8.5.3)
+  - [`@react-router/node@8.5.3`](https://github.com/remix-run/react-router/releases/tag/@react-router/node@8.5.3)
+
 ## v8.5.2
 
 ### Patch Changes

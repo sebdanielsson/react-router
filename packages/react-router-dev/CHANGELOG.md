@@ -1,5 +1,24 @@
 # `@react-router/dev`
 
+## v8.5.3
+
+### Patch Changes
+
+- Fix dev server crash when a route has an invalid export with `ssr: false` + `prerender` ([#15591](https://github.com/remix-run/react-router/pull/15591))
+  - The export validation was not awaited, so its error became an unhandled rejection that exited the process. It now surfaces as a Vite error and the dev server keeps running.
+
+- Allow `.server` module imports in Vitest tests that run in Node with Vitest's default middleware-mode server ([#15563](https://github.com/remix-run/react-router/pull/15563))
+
+  The check still applies in Browser Mode and when the test runner's Vite server listens, such as single-project runs with `--ui` or `--api`.
+
+- Fix circular type error when arrow function route components access `matches` ([#15163](https://github.com/remix-run/react-router/pull/15163))
+
+  Typegen now emits `{ id, loaderData: Info["loaderData"] }` for the current route's entry in the `Matches` tuple instead of `{ id, module: typeof import("./self") }`. This avoids the `RouteModule` assignability check that caused a circular TypeScript type reference when the route's default export was an arrow function component.
+- Updated dependencies:
+  - [`react-router@8.5.3`](https://github.com/remix-run/react-router/releases/tag/react-router@8.5.3)
+  - [`@react-router/node@8.5.3`](https://github.com/remix-run/react-router/releases/tag/@react-router/node@8.5.3)
+  - [`@react-router/serve@8.5.3`](https://github.com/remix-run/react-router/releases/tag/@react-router/serve@8.5.3)
+
 ## v8.5.2
 
 ### Patch Changes

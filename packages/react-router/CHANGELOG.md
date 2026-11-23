@@ -1,5 +1,68 @@
 # `react-router`
 
+## v8.5.3
+
+### Patch Changes
+
+- Forward all `NavigateOptions` from `<RouterProvider>`'s `navigator.push()` and `navigator.replace()` to `router.navigate()` ([#15781](https://github.com/remix-run/react-router/pull/15781))
+  - Options such as `mask`, `defaultShouldRevalidate`, `flushSync`, and `viewTransition` now reach the router from `<Link>`, `useNavigate()`, and `useSearchParams()` inside descendant `<Routes>` in Data and Framework modes
+
+- Keep a navigation that is awaiting lazy route discovery from being completed with the previous page's matches when a fetcher action revalidation settles in that window ([#15731](https://github.com/remix-run/react-router/pull/15731))
+
+- Fix circular type error when arrow function route components access `matches` ([#15163](https://github.com/remix-run/react-router/pull/15163))
+
+  Accessing `matches` from `Route.ComponentProps` in an arrow function component caused a TypeScript circular type reference error while the equivalent function declaration worked fine.
+
+  The issue was that the generated `Matches` tuple included `module: typeof import("./self")` for the current route's entry. TypeScript's `RouteModule` assignability check evaluates `["default"]` — which for arrow functions requires resolving the parameter type annotation, ultimately looping back to `Route.ComponentProps`. Function declarations avoid this because their type is known from the declaration without evaluating parameter types.
+
+  The fix changes the type infrastructure to use a `MatchInfoWithLoaderData` alternative for the self-match entry, which carries `loaderData` directly and sidesteps the `RouteModule` check entirely.
+
+- Fix `useBlocker` blocking a second time when the destination route updates search params in a mount effect ([#15538](https://github.com/remix-run/react-router/pull/15538))
+
+- Fix `<Form>` and `useSubmit` to read `encType`/`formEncType` values case-insensitively, so a value like `Multipart/Form-Data` submits as multipart instead of falling back to `application/x-www-form-urlencoded` ([#15776](https://github.com/remix-run/react-router/pull/15776))
+
+- Fix hash history not restoring the router location of a masked entry on Back/Forward ([#15771](https://github.com/remix-run/react-router/pull/15771))
+
+- Fix `<HydratedRouter>` re-rendering the previous route after each navigation ([#15823](https://github.com/remix-run/react-router/pull/15823))
+
+  `DataRoutes` read `FrameworkContext`, whose value changes on every `<HydratedRouter>` location update, so its memoization was bypassed and the route tree rendered again with the old router state before the new location committed. With `<Navigate state={...} replace>` this could loop until Safari threw a `SecurityError` for too many `history.replaceState()` calls. `RouterProvider` now reads the route discovery runtime and passes it to `DataRoutes` as a prop.
+
+- Keep the current route's `actionData` during the `loading` state of a submission to another route, so the page that is still rendered no longer sees `undefined` before the navigation completes ([#15716](https://github.com/remix-run/react-router/pull/15716))
+
+- Let the browser handle clicks on a `<Link download>` (and on custom links built with `useLinkClickHandler`) so the file is downloaded instead of being navigated to with client-side routing ([#15815](https://github.com/remix-run/react-router/pull/15815))
+
+- Suppress nonce hydration warnings on critical CSS and HTML link descriptors rendered by `<Links>`, and on the developer scripts rendered by the default root error boundary and hydrate fallback, when using `<ServerRouter nonce>`. ([#15721](https://github.com/remix-run/react-router/pull/15721))
+
+- Fix blocked back/forward navigations in a memory router landing on the wrong history entry when the requested delta goes past the first or last entry ([#15779](https://github.com/remix-run/react-router/pull/15779))
+
+- Preserve `caseSensitive` on client routes in Framework Mode and `createRoutesStub()` ([#15808](https://github.com/remix-run/react-router/pull/15808))
+  - Forward `route.caseSensitive` in `createClientRoutes()` so client hydration, client-side navigation, lazy route discovery, and HMR match `createServerRoutes()` and `createStaticHandlerDataRoutes()`
+  - Forward `route.caseSensitive` in `createRoutesStub()`
+
+- Preserve loader data for the current routes when a background fetcher finishes during a navigation, preventing missing layout content when the navigation reuses that data. ([#15806](https://github.com/remix-run/react-router/pull/15806))
+
+- Discard invalid persisted scroll-position records so page hide can save new positions without throwing or silently losing them. ([#15794](https://github.com/remix-run/react-router/pull/15794))
+
+- Fix `session.unset()` to remove both regular and flashed values for the given key and accept flash-only keys in typed sessions. ([#15811](https://github.com/remix-run/react-router/pull/15811))
+
+- Keep `NavLink` inactive in the prerendered Framework SPA fallback and set its active state from the browser URL after hydration ([#15818](https://github.com/remix-run/react-router/pull/15818))
+
+- Be defensive against leading double slashes in static router `encodeLocation()` ([#15805](https://github.com/remix-run/react-router/pull/15805))
+  - Prevents `TypeError: Invalid URL` during SSR in `<ServerRouter>`, `<StaticRouterProvider>`, and `<StaticRouter>` when encoding locations with leading double slashes (such as query-only or hash-only `<NavLink>`s on double-slash request URLs)
+
+- Fix unhandled single-fetch stream completion rejections while preserving errors for callers awaiting completion or deferred values ([#15765](https://github.com/remix-run/react-router/pull/15765))
+
+- Treat session cookies with an invalid payload shape as empty sessions. Storage adapters receive only nonempty string session IDs, and cookie-backed sessions accept only non-array objects as session data. ([#15809](https://github.com/remix-run/react-router/pull/15809))
+
+### Unstable Changes
+
+⚠️  _[Unstable features](https://reactrouter.com/community/api-development-strategy#unstable-flags) are not recommended for production use_
+
+- Report loader, action, and middleware errors through `unstable_matchRSCServerRequest`'s `onError` and log request errors with `console.error` by default when no `onError` is provided ([#15598](https://github.com/remix-run/react-router/pull/15598))
+  - Report middleware errors that occur after a form action consumes the request body.
+  - Avoid logging route errors again when rendering the default error boundary during SSR in RSC Data and RSC Framework Mode.
+- Avoid false 404s in RSC Framework and RSC Data modes when navigating while eager route discovery is still streaming route definitions ([#15801](https://github.com/remix-run/react-router/pull/15801))
+
 ## v8.5.2
 
 ### Patch Changes
